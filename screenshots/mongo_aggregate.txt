@@ -1,0 +1,45 @@
+db.collection_one.aggregate([
+  {
+    index: "collection_one_name",
+    $search: {
+      "text": {
+        "path": "name",
+        "query": "kian seng",
+        "fuzzy": {}
+      }
+    }
+  },
+  {
+    $limit: 10
+  },
+  {
+    $project: {
+      "_id": 0,
+      "title": 1,
+      score: { $meta: "searchScore" }
+    }
+  }
+]);
+
+db.person.aggregate([
+  {
+    index: "collection_one_name",
+    $search: {
+      "text": {
+        "path": "name",
+        "query": "kian seng",
+        "fuzzy": {}
+      }
+    }
+  },
+  {
+    $limit: 5000
+  },
+  {
+    $project: {
+      "_id": 0,
+      "name": 1,
+      score: { $meta: "searchScore" }
+    }
+  }
+]);

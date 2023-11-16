@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" integrity="sha512-3pIirOrwegjM6erE5gPSwkUzO+3cTjpnV9lexlNZqvupR64iZBnOOTiiLPb9M36zpMScbmUNIcHUqKD47M719g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Styles required by this views -->
+    <link href="/fuzzy/public/vendors/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/fuzzy/public/vendors/datatables.net-bs4/css/responsive.dataTables.min.css">
+    <link href="https://cdn.datatables.net/buttons/1.6.1/css/buttons.dataTables.min.css" rel="stylesheet">
+    <link href="/fuzzy/public/css/style.css" rel="stylesheet">
+  
+    <title>Fuzzy Search</title>
+</head>
+  <body> 
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.7.0.js" integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+    <!--<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="/fuzzy/public/vendors/js/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="/fuzzy/node_modules/axios/dist/axios.min.js"></script>
+
+    <script src="/fuzzy/public/js/core_constants.js"></script>
+    <script src="/fuzzy/public/js/core_utils.js"></script>
+    <script src="/fuzzy/public/js/api_utils.js"></script>
+
+    <!--data table-->
+    <script src="/fuzzy/public/vendors/js/jquery.dataTables.min.js"></script>
+    <script src="/fuzzy/public/vendors/js/dataTables.bootstrap4.min.js"></script>
+    <script src="/fuzzy/public/vendors/datatables.net-bs4/js/dataTables.responsive.min.js"></script>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12"><h1>Fuzzy Search</h1></div>    
+        </div>
+        <div class="row">
+            <div class="col-md-3">Category</div> 
+            <div class="col-md-9">
+                <select class="form-control" id="category">
+                    <option value="person">PERSON</option>
+                </select>
+            </div> 
+        </div>
+
+        <div class="form-group row" style="margin-top:5pt;">
+            <div class="col-md-3">Search Name</div> 
+            <div class="col-md-9">
+                <input class="form-control" type="text" id="search_name" placeholder="Search Name">
+            </div> 
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12"><span id="msg" style="color: blue; font-size: 10pt; font-style: italic;">&nbsp;</span></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-sm-12">
+            <button type="button" id="search_btn" class="btn btn-primary" style="min-width:80pt" onclick="searchName()" title="search"><i class="fa fa-search"></i>&nbsp;Search
+            </button>
+
+            <button type="reset" class="btn btn-danger" style="min-width:80pt" onclick="clearSearch()" title="clear"><i class="fa fa-trash" aria-hidden="true"></i>&nbsp;Clear
+            </button>
+            
+          </div>
+        </div>
+      
+        <div class="row">
+            <div class="col-lg-12">
+              <div class="card">
+                <div class="card-header">
+                    <div>
+                    <i class="fa fa-align-justify"></i>
+                    <strong>Search Result(s)</strong>
+                    </div>
+                  </div>
+              </div>
+
+              <div class="card-body">
+                 <div class="table-responsive m-t-40" style="margin-top:5pt;">
+                   <table id="content_table" class="table display table-bordered table-striped no-wrap" cellspacing="0" width="100%">
+                       <thead>
+                         <tr>
+                           <th>Primary Name</th>
+                           <th>Gender</th>
+                           <th>Score</th>
+                         </tr>
+                       </thead>
+                       <tbody>
+                       </tbody>
+                     </table>
+
+               </div>
+            </div>
+        </div>
+     
+    </div>
+   
+    <script>
+        var DATATABLE_INIT = false;
+
+        //populate onto table
+        function populateDataTable(data){
+            if (!DATATABLE_INIT){
+                console.log("Initialise & Populate datatable");
+            // $('#content_table').DataTable( {responsive: true});
+
+                $('#content_table').DataTable({
+                pageLength: Core_Constants.PAGE_LENGTH_DEFAULT,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                responsive: true,
+                columnDefs: [{
+                    'targets': 0,
+                    'searchable':false,
+                    'orderable':false
+                    }],
+                dom: 'Blfrtip',
+                order: [[2, 'score']],
+
+                });
+                repopulateDataTable(data);
+                DATATABLE_INIT = true;
+            }else{
+                clearDataTable();
+                repopulateDataTable(data);
+            }
+        }
+
+        //Remove all from table
+        function clearDataTable(){
+           // console.log("Clear datatable");
+            if (!DATATABLE_INIT) return;
+            var table = $('#content_table').DataTable();
+            var rows = table
+                .rows()
+                .remove()
+                .draw();
+            table.columns.adjust().responsive.recalc();
+        }
+
+        //Delete Row
+        function deleteDataTable(key){
+           // console.log("Delete datatable=", key);
+            var table = $('#content_table').DataTable()
+            var filteredData = table
+            .rows()
+            .indexes()
+            .filter( function ( value, index ) {
+                var r = table.row(value).data();
+                if (r.includes(key))
+                    return r;
+            } );
+            table.rows( filteredData )
+            .remove()
+            .draw();
+
+            table.columns.adjust().responsive.recalc();
+        }
+
+        //Insert Row
+        function insertDataTable(data){
+            console.log("Insert datatable=", data);
+            var table = $('#content_table').DataTable();
+            table.row.add( data )
+            .draw();
+
+            table.columns.adjust().responsive.recalc();
+        }
+
+        //Repopulate Datatable
+        function repopulateDataTable(data){
+            console.log("Repopulate datatable");
+            var table = $('#content_table').DataTable();
+            table.rows.add( data ).draw();
+            table.columns.adjust().responsive.recalc();
+        }
+
+        //Create DataTable Record
+        function createDataTableRecord(subject){
+            return [subject.primary_name? subject.primary_name:"",
+                subject.gender?subject.gender:"", 
+                subject.score?subject.score:""];
+        }
+
+        searchName = async function(){
+            clearDataTable();
+            $("#msg").html("Processing");
+            var search_name = $("#search_name").val();
+            if (!search_name){
+                $("#msg").html("Search Name cannot be empty!");
+                $("#search_name").focus();
+                return;
+            }
+
+            try{
+                Core_Utils.setBusy(true);
+                var result = await Api_Utils.searchPerson({"name" : search_name});
+               // console.log(result);
+              //  toastr.info("Success");
+                $("#msg").html(`${result["count"]} record(s) found!`);
+                var list = result.result;
+                var data = [];
+                for (var i in list) {
+                    var subject = list[i];
+                    var record = createDataTableRecord(subject);
+                    if (record) data.push(record);
+                }
+                if (data.length>0) populateDataTable(data);
+                delete data;
+            } catch(e) {
+                console.log("oops something went wrong."+e);
+                $("#msg").html(`Error!`);
+            }finally {
+                setTimeout(function(){Core_Utils.setBusy(false); }, 500);
+                Core_Utils.setBusy(false); 
+            }
+        }
+
+        clearSearch = function(){
+            $("#category").val($("#category option:first").val());
+            $("#msg").html(`-`);
+            $("#search_name").val("");
+            clearDataTable();
+            $("#search_name").focus();
+        }
+
+        init = function(){
+            let btn = document.getElementById('search_btn');
+            document.addEventListener('keypress', (event)=>{
+                // event.keyCode or event.which  property will have the code of the pressed key
+                let keyCode = event.keyCode ? event.keyCode : event.which;
+
+                // 13 points the enter key
+                if(keyCode === 13) {
+                    // call click function of the buttonn 
+                    btn.click();
+                }
+            });
+
+            Core_Utils.writeSpinnerModal();
+        }
+            
+        $(function() {
+            // Handler for .ready() called.
+            $("#search_name").focus();
+            console.log("Ready");
+            init();
+            //toastr.info('Ready');
+        });
+
+    </script>
+</body>
+</html>
